@@ -106,6 +106,7 @@ function! statusline#gitdotfiles() abort " {{{
 endfunction " }}}
 function! statusline#gitinfo() abort " {{{
   " Only call this function when active
+  " TODO make this just '===' when no git repo. FIX THIS ! :(
   if exists('g:loaded_fugitive') && &modifiable
     let s = ''
     let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', ' ==')
