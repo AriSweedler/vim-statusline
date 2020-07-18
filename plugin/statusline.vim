@@ -67,9 +67,9 @@ function! statusline#spelling() abort " {{{
 endfunction " }}}
 function! statusline#filename(active) abort " {{{
   if a:active
-    return statusline#color('StatuslineFilename', ' %t ')
+    return statusline#color('StatuslineFilename', ' %f ')
   else
-    return statusline#color('StatuslineInactiveInfo', ' %t ')
+    return statusline#color('StatuslineInactiveInfo', ' %F ')
   endif
 endfunction " }}}
 function! statusline#mod_divider() abort " {{{
@@ -130,7 +130,7 @@ function! statusline#typeinfo(active) abort " {{{
   endif
 endfunction " }}}
 function! statusline#cursorinfo() abort " {{{
-  return statusline#color(b:statusline_mode_highlight, ' %l/%L ')
+  return statusline#color(b:statusline_mode_highlight, ' %l/%L c%c ')
 endfunction " }}}
 function! statusline#errors() abort " {{{
   " Cache statusline_errors
