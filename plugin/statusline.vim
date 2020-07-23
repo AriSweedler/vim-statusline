@@ -11,10 +11,19 @@ set statusline=%!statusline#active()
 " {{{ Autocommands
 augroup Statusline
   autocmd!
+
+  " Statusline setting
   autocmd WinLeave,BufLeave * setlocal statusline=%!statusline#inactive()
   autocmd WinEnter,BufEnter * setlocal statusline=%!statusline#active()
-  "
-  "recalculate the tab warning flag when idle and after writing
+
+  " Branch cache
+  " TODO maybe have this just be lazy-eval'd instead of cached.
+  autocmd WinEnter,BufEnter * call statusline#set_git_branch()
+  autocmd WinLeave,BufLeave * call statusline#unset_git_branch()
+  autocmd bufwritepost * call statusline#unset_git_branch() | call statusline#set_git_branch()
+
+  " Error cache
+  " Recalculate the tab warning flag when idle and after writing
   autocmd cursorhold,bufwritepost * unlet! b:statusline_errors
 augroup END
 " }}}
@@ -22,7 +31,7 @@ augroup END
 " Init variables to defaults
 let b:statusline_mode_highlight = 'StatuslineModeNormal'
 let b:statusline_mode_text = 'NORMAL'
-let b:statusline_modified_highlight = 'StatuslineUnmodified'
+let b:statusline_dotfiles = 0
 " }}}
 " {{{ Mode map
 let s:modes ={
@@ -56,6 +65,39 @@ function! statusline#inactive() abort " {{{
   return s
 endfunction
 " }}}
+function! statusline#unset_git_branch() abort " {{{
+  if exists('b:statusline_branch')
+    unlet b:statusline_branch
+  endif
+endfunction " }}}
+function! statusline#set_git_branch() abort " {{{
+  " No need to figure this out twice
+  if exists('b:statusline_branch')
+    return
+  endif
+
+  " TODO be rigorous here
+  " I'm lazy, this is good enough. If fugitive can find our repo, I don't need
+  " to do any more work.
+  if fugitive#head() != ''
+    let b:statusline_branch = fugitive#head()
+    return
+  endif
+
+  " Big ol' complicated check to see if we're in a dotfiles file
+  let dotfiles_cmd = "git --git-dir=$HOME/dotfiles/ --work-tree=$HOME"
+  let ls_tree_cmd = "ls-tree --full-tree -r --abbrev --name-only HEAD"
+  let filename = expand("%:~:s?\\~/??")
+  call system(dotfiles_cmd . " " . ls_tree_cmd . " | grep " . l:filename)
+  if ! v:shell_error
+    let b:statusline_dotfiles = 1
+    let b:statusline_branch = systemlist(dotfiles_cmd . " rev-parse --abbrev-ref HEAD")[0]
+    return
+  endif
+
+  let b:statusline_branch = ''
+  return
+endfunction " }}}
 function! statusline#color(highlight_group, text) abort " {{{
   return '%#' . a:highlight_group . '#' . a:text . '%*'
 endfunction " }}}
@@ -78,36 +120,28 @@ function! statusline#mod_divider() abort " {{{
   return statusline#color(l:mod, ' %m %=')
 endfunction " }}}
 function! statusline#gitbranch() abort " {{{
-  " Only call this function when active
-  if exists('g:loaded_fugitive') && &modifiable
-    return statusline#color(b:statusline_mode_highlight . 'Reverse', ' ' . fugitive#head() . ' ')
-  endif
-  return ' ~no git~ '
+  " Highlight properly and return
+  let text = (b:statusline_branch == '') ? ' ' : ' ' . b:statusline_branch . ' '
+  return statusline#color(b:statusline_mode_highlight . 'Reverse', l:text)
 endfunction " }}}
 function! statusline#gitchanges() abort " {{{
-  " Only call this function when active
-  if exists('g:loaded_gitgutter') && &modifiable
-    let [added,modified,removed] = GitGutterGetHunkSummary()
-    let s = ''
-    let s .= statusline#color('StatuslineGitGutterAdd', '+' . added)
-    let s .= statusline#color('StatuslineGitGutterChange', '~' . modified)
-    let s .= statusline#color('StatuslineGitGutterDelete', '-' . removed)
-    return s
-  endif
-  return ''
+  let [added,modified,removed] = GitGutterGetHunkSummary()
+  let s = ''
+  let s .= statusline#color('StatuslineGitGutterAdd', '+' . added)
+  let s .= statusline#color('StatuslineGitGutterChange', '~' . modified)
+  let s .= statusline#color('StatuslineGitGutterDelete', '-' . removed)
+  return s
 endfunction " }}}
 function! statusline#gitdotfiles() abort " {{{
-  " Only call this function when active
-  " Only useful if you follow 'https://www.atlassian.com/git/tutorials/dotfiles
-  if exists('g:loaded_gitgutter') && &modifiable && g:gitgutter_git_executable == "git"
+  if ! b:statusline_dotfiles
     return ''
   endif
   return statusline#color(b:statusline_mode_highlight . 'Reverse', ' [DOTFILES]')
 endfunction " }}}
 function! statusline#gitinfo() abort " {{{
-  " Only call this function when active
-  " TODO make this just '===' when no git repo. FIX THIS ! :(
-  if exists('g:loaded_fugitive') && &modifiable
+  if b:statusline_branch == ''
+    return statusline#color(b:statusline_mode_highlight . 'Reverse', ' ~===~ ')
+  elseif exists('g:loaded_gitgutter') && &modifiable
     let s = ''
     let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', ' ==')
     let s .= statusline#gitbranch()
