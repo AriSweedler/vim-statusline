@@ -40,8 +40,9 @@ let s:modes ={
       \ 'v'  : ['StatuslineModeVisual', 'VISUAL'],
       \ 'V'  : ['StatuslineModeVLine', 'V-LINE'],
       \ '' : ['StatuslineModeVBlock', 'VBLOCK'],
-      \ 'c'  : ['StatuslineModeCommand', 'CMMAND'],
-      \ '-'  : ['StatuslineModeOther', '------']}
+      \ 'c'  : ['StatuslineModeOther', 'CMMAND'],
+      \ 'R'  : ['StatuslineModeOther', 'REPLACE'],
+      \ '-'  : ['StatuslineModeNull', '------']}
 " }}}
 function! statusline#active() abort " {{{
   let s = ''
@@ -213,8 +214,8 @@ highlight StatuslineModeInsert ctermfg=0 ctermbg=41
 highlight StatuslineModeVisual ctermfg=0 ctermbg=208
 highlight StatuslineModeVLine ctermfg=0 ctermbg=208
 highlight StatuslineModeVBlock ctermfg=0 ctermbg=208
-highlight StatuslineModeCommand ctermfg=0 ctermbg=184
-highlight StatuslineModeOther ctermfg=3 ctermbg=11
+highlight StatuslineModeOther ctermfg=0 ctermbg=184
+highlight StatuslineModeNull ctermfg=3 ctermbg=11
 " }}}
 " {{{ Reverse Modes
 highlight StatuslineModeNormalReverse cterm=bold ctermfg=44 ctermbg=0
@@ -222,8 +223,8 @@ highlight StatuslineModeInsertReverse cterm=bold ctermfg=41 ctermbg=0
 highlight StatuslineModeVisualReverse cterm=bold ctermfg=208 ctermbg=0
 highlight StatuslineModeVLineReverse cterm=bold ctermfg=208 ctermbg=0
 highlight StatuslineModeVBlockReverse cterm=bold ctermfg=208 ctermbg=0
-highlight StatuslineModeCommandReverse cterm=bold ctermfg=184 ctermbg=0
-highlight StatuslineModeOtherReverse cterm=bold ctermfg=208 ctermbg=0
+highlight StatuslineModeOtherReverse cterm=bold ctermfg=184 ctermbg=0
+highlight StatuslineModeNullReverse cterm=bold ctermfg=208 ctermbg=0
 " }}}
 " {{{ GitGutter
 highlight StatuslineGitGutterAdd term=bold ctermfg=34 ctermbg=0
