@@ -71,6 +71,8 @@ function! statusline#unset_git_branch() abort " {{{
   endif
 endfunction " }}}
 function! statusline#set_git_branch() abort " {{{
+  let b:statusline_dotfiles = 0
+
   " No need to figure this out twice
   if exists('b:statusline_branch')
     return
