@@ -142,6 +142,10 @@ function! statusline#gitdotfiles() abort " {{{
   return statusline#color(b:statusline_mode_highlight . 'Reverse', ' [DOTFILES]')
 endfunction " }}}
 function! statusline#gitinfo() abort " {{{
+  if !exists('b:statusline_branch')
+    let b:statusline_branch = ''
+  endif
+
   if b:statusline_branch == ''
     return statusline#color(b:statusline_mode_highlight . 'Reverse', ' ~===~ ')
   elseif exists('g:loaded_gitgutter') && &modifiable
@@ -206,8 +210,9 @@ highlight StatuslineModified ctermfg=195 ctermbg=17
 highlight StatuslineGit ctermfg=44 ctermbg=16
 highlight StatuslineFiletype ctermfg=16 ctermbg=102
 highlight StatuslineSpelling ctermfg=24 ctermbg=236
-highlight StatuslineInactiveInfo ctermfg=249 ctermbg=235
-highlight StatuslineInactiveBackground ctermfg=239 ctermbg=234
+highlight StatuslineInactiveInfo ctermfg=249 ctermbg=69
+"highlight StatuslineInactiveBackground ctermfg=239 ctermbg=234
+highlight StatuslineInactiveBackground ctermfg=239 ctermbg=195
 " {{{ Modes
 highlight StatuslineModeNormal ctermfg=0 ctermbg=44
 highlight StatuslineModeInsert ctermfg=0 ctermbg=41
