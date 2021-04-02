@@ -17,10 +17,12 @@ augroup Statusline
   autocmd WinEnter,BufEnter * setlocal statusline=%!statusline#active()
 
   " Branch cache
-  " TODO maybe have this just be lazy-eval'd instead of cached.
-  autocmd WinEnter,BufEnter * call statusline#set_git_branch()
-  autocmd WinLeave,BufLeave * call statusline#unset_git_branch()
-  autocmd bufwritepost * call statusline#unset_git_branch() | call statusline#set_git_branch()
+  " TODO maybe have this just be lazy-eval'd instead of cached. To do this,
+  " add 'cursorhold' to the unset | set autocmd to do this. Seems a bit too
+  " expensive though
+  autocmd WinEnter,BufEnter * call statusline#cache_git_branch()
+  autocmd WinLeave,BufLeave * call statusline#uncache_git_branch()
+  autocmd bufwritepost * call statusline#uncache_git_branch() | call statusline#cache_git_branch()
 
   " Error cache
   " Recalculate the tab warning flag when idle and after writing
@@ -31,7 +33,6 @@ augroup END
 " Init variables to defaults
 let b:statusline_mode_highlight = 'StatuslineModeNormal'
 let b:statusline_mode_text = 'NORMAL'
-let b:statusline_dotfiles = 0
 " }}}
 " {{{ Mode map
 let s:modes ={
@@ -45,6 +46,11 @@ let s:modes ={
       \ '-'  : ['StatuslineModeNull', '------']}
 " }}}
 function! statusline#active() abort " {{{
+  " First thing we do every tick is ensure we have the right gitgutter
+  " command. This has nothing to do with the statusline, other than it, too,
+  " controls the colorful border I like having on my screen.
+  call lib#update_gitgutter_dotfile()
+
   let s = ''
   let s .= statusline#mode(1)
   let s .= statusline#gitinfo()
@@ -66,35 +72,22 @@ function! statusline#inactive() abort " {{{
   return s
 endfunction
 " }}}
-function! statusline#unset_git_branch() abort " {{{
+function! statusline#uncache_git_branch() abort " {{{
   if exists('b:statusline_branch')
     unlet b:statusline_branch
   endif
 endfunction " }}}
-function! statusline#set_git_branch() abort " {{{
-  let b:statusline_dotfiles = 0
-
+function! statusline#cache_git_branch() abort " {{{
   " No need to figure this out twice
   if exists('b:statusline_branch')
     return
   endif
 
-  " TODO be rigorous here
+  " TODO be rigorous here (have it work with dotfiles)
   " I'm lazy, this is good enough. If fugitive can find our repo, I don't need
   " to do any more work.
   if fugitive#head() != ''
     let b:statusline_branch = fugitive#head()
-    return
-  endif
-
-  " Big ol' complicated check to see if we're in a dotfiles file
-  let dotfiles_cmd = "git --git-dir=$HOME/dotfiles/ --work-tree=$HOME"
-  let ls_tree_cmd = "ls-tree --full-tree -r --abbrev --name-only HEAD"
-  let filename = expand("%:~:s?\\~/??")
-  call system(dotfiles_cmd . " " . ls_tree_cmd . " | grep " . l:filename)
-  if ! v:shell_error
-    let b:statusline_dotfiles = 1
-    let b:statusline_branch = systemlist(dotfiles_cmd . " rev-parse --abbrev-ref HEAD")[0]
     return
   endif
 
@@ -122,39 +115,28 @@ function! statusline#mod_divider() abort " {{{
   let mod = &modified ? 'StatuslineModified' : 'StatuslineUnmodified'
   return statusline#color(l:mod, ' %m %=')
 endfunction " }}}
-function! statusline#gitbranch() abort " {{{
-  " Highlight properly and return
-  let text = (b:statusline_branch == '') ? ' ' : ' ' . b:statusline_branch . ' '
-  return statusline#color(b:statusline_mode_highlight . 'Reverse', l:text)
-endfunction " }}}
 function! statusline#gitchanges() abort " {{{
   let [added,modified,removed] = GitGutterGetHunkSummary()
   let s = ''
   let s .= statusline#color('StatuslineGitGutterAdd', '+' . added)
   let s .= statusline#color('StatuslineGitGutterChange', '~' . modified)
   let s .= statusline#color('StatuslineGitGutterDelete', '-' . removed)
+  let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', ' ')
   return s
-endfunction " }}}
-function! statusline#gitdotfiles() abort " {{{
-  if ! b:statusline_dotfiles
-    return ''
-  endif
-  return statusline#color(b:statusline_mode_highlight . 'Reverse', ' [DOTFILES]')
 endfunction " }}}
 function! statusline#gitinfo() abort " {{{
   if !exists('b:statusline_branch')
     let b:statusline_branch = ''
   endif
 
+  let dotfiles_tag = lib#in_dotfiles() ? '[DOTFILES] ' : ''
   if b:statusline_branch == ''
-    return statusline#color(b:statusline_mode_highlight . 'Reverse', ' ~===~ ')
+    return statusline#color(b:statusline_mode_highlight . 'Reverse', ' ~===~ ' . l:dotfiles_tag)
   elseif exists('g:loaded_gitgutter') && &modifiable
     let s = ''
-    let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', ' ==')
-    let s .= statusline#gitbranch()
+    let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', ' == ' . b:statusline_branch . ' ')
     let s .= statusline#gitchanges()
-    let s .= statusline#gitdotfiles()
-    let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', ' == ')
+    let s .= statusline#color(b:statusline_mode_highlight . 'Reverse', l:dotfiles_tag . '== ')
     return s
   endif
   return ''
