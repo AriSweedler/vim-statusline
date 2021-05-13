@@ -56,6 +56,7 @@ function! statusline#active() abort " {{{
   let s .= statusline#gitinfo()
   let s .= statusline#filename(1)
   let s .= statusline#mod_divider()
+  let s .= statusline#pokeme()
   let s .= statusline#typeinfo(1)
   let s .= statusline#cursorinfo()
   let s .= statusline#spelling()
@@ -154,6 +155,18 @@ function! statusline#typeinfo(active) abort " {{{
 endfunction " }}}
 function! statusline#cursorinfo() abort " {{{
   return statusline#color(b:statusline_mode_highlight, ' %l/%L c%c ')
+endfunction " }}}
+function! statusline#pokeme() abort " {{{
+  let poker = ''
+
+  " 1) Check for the k-mark. If it's active, then we're trying to make a linky link
+  if col("'k") != 0
+    let poker .= statusline#color(b:statusline_mode_highlight, ' K-mark active ')
+  endif
+
+  " 2) Check for OTHER STATE (future expansion :3)
+
+  return poker
 endfunction " }}}
 function! statusline#errors() abort " {{{
   " Cache statusline_errors
