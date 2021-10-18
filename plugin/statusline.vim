@@ -168,7 +168,15 @@ function! statusline#pokeme() abort " {{{
     let poker .= statusline#color(b:statusline_mode_highlight, ' K-mark active ')
   endif
 
-  " 2) Check for OTHER STATE (future expansion :3)
+  " 2) Check for g:ari_debug value, display it if possible
+  if exists("g:ari_debug")
+    for [k, v] in items(g:ari_debug)
+      if v == 'inactive' | continue | endif
+      let poker .= statusline#color('StatuslinePoke1', ' Debug '.k.' ')
+    endfor
+  endif
+
+  " 3) Check for OTHER STATE (future expansion :3)
 
   return poker
 endfunction " }}}
@@ -219,6 +227,7 @@ highlight StatuslineModeVisual ctermfg=0 ctermbg=208
 highlight StatuslineModeVLine ctermfg=0 ctermbg=208
 highlight StatuslineModeVBlock ctermfg=0 ctermbg=208
 highlight StatuslineModeOther ctermfg=0 ctermbg=184
+highlight StatuslinePoke1 ctermfg=2 ctermbg=0
 highlight StatuslineModeNull ctermfg=3 ctermbg=11
 " }}}
 " {{{ Reverse Modes
