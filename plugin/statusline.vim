@@ -163,7 +163,8 @@ function! statusline#pokeme() abort " {{{
   let poker = ''
 
   " 1) Check for the k-mark. If it's active, then we're trying to make a linky link
-  if col("'k") != 0
+  let k_mark = col("'k")
+  if k_mark != 0
     let poker .= statusline#color(b:statusline_mode_highlight, ' K-mark active ')
   endif
 
