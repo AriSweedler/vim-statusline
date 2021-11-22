@@ -8,6 +8,8 @@ set laststatus=2
 set statusline=%!statusline#inactive()
 set statusline=%!statusline#active()
 
+set noshowmode
+
 " {{{ Autocommands
 augroup Statusline
   autocmd!
