@@ -162,15 +162,18 @@ function! statusline#cursorinfo() abort " {{{
   return statusline#color(b:statusline_mode_highlight, ' %l/%L c%c ')
 endfunction " }}}
 function! statusline#pokeme() abort " {{{
+  " Extra (optional/stateful) information. Lives on the right side of the
+  " statusline. Each clause is called a "poke"
   let poker = ''
 
-  " 1) Check for the k-mark. If it's active, then we're trying to make a linky link
+  " 1) Check for the k-mark. If it's active, then we're trying to make a link
   let k_mark = col("'k")
   if k_mark != 0
     let poker .= statusline#color(b:statusline_mode_highlight, ' K-mark active ')
   endif
 
-  " 2) Check for g:ari_debug value, display it if possible
+  " 2) Check for g:ari_debug value, display it if possible (ToggleDebugSyntax,
+  " for example)
   if exists("g:ari_debug")
     for [k, v] in items(g:ari_debug)
       if v == 'inactive' | continue | endif
@@ -178,7 +181,12 @@ function! statusline#pokeme() abort " {{{
     endfor
   endif
 
-  " 3) Check for OTHER STATE (future expansion :3)
+  " 3) Check for 'paste'
+  if (&paste == 1)
+    let poker .= statusline#color('StatuslinePoke1', ' [paste] ')
+  endif
+
+  " 4) Check for OTHER STATE (future expansion :3)
 
   return poker
 endfunction " }}}
