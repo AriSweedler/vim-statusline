@@ -92,8 +92,8 @@ function! statusline#cache_git_branch() abort " {{{
   " TODO be rigorous here (have it work with dotfiles)
   " I'm lazy, this is good enough. If fugitive can find our repo, I don't need
   " to do any more work.
-  if fugitive#head() != ''
-    let b:statusline_branch = fugitive#head()
+  if FugitiveHead() != ''
+    let b:statusline_branch = FugitiveHead()
     return
   endif
 
