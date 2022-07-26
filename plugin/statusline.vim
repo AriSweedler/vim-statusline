@@ -37,7 +37,7 @@ let b:statusline_mode_highlight = 'StatuslineModeNormal'
 let b:statusline_mode_text = 'NORMAL'
 
 " Refresh the statusline (needs to happen when a Session is restored)
-command ReloadStatusline runtime START statusline.vim
+execute "command StatuslineReload source ".expand("<sfile>")
 " }}}
 " {{{ Mode map
 let s:modes ={
