@@ -57,6 +57,7 @@ function! statusline#active() abort " {{{
   call lib#update_gitgutter_dotfile()
 
   let s = ''
+  let s .= statusline#prog()
   let s .= statusline#mode(1)
   let s .= statusline#gitinfo()
   let s .= statusline#filename(1)
@@ -213,6 +214,20 @@ function! statusline#errors() abort " {{{
     endif
   endif
   return b:statusline_errors
+endfunction " }}}
+function! statusline#prog() abort " {{{
+  let ans='using vim...'
+  let color='ErrorMsg'
+  if has('nvim')
+    let ans='nvim'
+    let color='StatuslineModeNormalReverse'
+  else
+    echom "We are opening this in vim"
+    echom "We are opening this in vim"
+    echom "We are opening this in vim"
+    echom "We are opening this in vim"
+  endif
+  return statusline#color(l:color, ' ' . l:ans . ' ')
 endfunction " }}}
 function! statusline#mode(active) abort " {{{
   let m = get(s:modes, mode(), '-')
