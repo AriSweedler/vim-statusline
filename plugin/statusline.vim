@@ -61,6 +61,7 @@ function! statusline#active() abort " {{{
   let s .= statusline#mode(1)
   let s .= statusline#gitinfo()
   let s .= statusline#filename(1)
+  let s .= statusline#codeium()
   let s .= statusline#mod_divider()
   let s .= statusline#pokeme()
   let s .= statusline#typeinfo(1)
@@ -234,6 +235,23 @@ function! statusline#mode(active) abort " {{{
   let b:statusline_mode_highlight = m[0]
   let b:statusline_mode_text = m[1]
   return statusline#color(b:statusline_mode_highlight, ' ' . b:statusline_mode_text . ' ')
+endfunction " }}}
+function! statusline#codeium() abort " {{{
+  if !get(g:, 'codeium_enabled', v:true)
+    return ''
+  endif
+  let my_str = codeium#GetStatusString()
+
+  if my_str == " ON"
+    let my_str = "ON"
+  endif
+  if my_str == " 0 "
+    let my_str = "0"
+  endif
+  if my_str == " * "
+    let my_str = "*"
+  endif
+  return statusline#color(b:statusline_mode_highlight, " codeium: " . my_str . " ")
 endfunction " }}}
 " {{{ Colors
 highlight StatuslineFilename ctermfg=230 ctermbg=53
